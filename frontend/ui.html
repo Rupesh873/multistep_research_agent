@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>MSRA - Chat</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="sidebar-top">
+        <div class="brand">MSRA</div>
+        <button class="btn primary small" id="newChatBtn">+ New chat</button>
+      </div>
+      <div class="sidebar-list" id="chatList"></div>
+      <div class="sidebar-bottom">
+        <a class="link" href="/">← Home</a>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div>
+          <div id="activeChatTitle" style="font-weight:700">New Chat</div>
+          <div class="muted" id="activeChatMeta"></div>
+          <div class="muted" id="exportHint">Tip: click a user query to export only that turn.</div>
+        </div>
+        <div class="topbar-actions">
+          <button class="btn small" id="renameBtn">Rename</button>
+          <button class="btn danger small" id="deleteBtn">Delete</button>
+          <span class="divider"></span>
+          <button class="btn small" id="exportPdfBtn">Export PDF</button>
+          <button class="btn small" id="exportDocxBtn">Export DOCX</button>
+        </div>
+      </div>
+
+      <div class="messages" id="messages"></div>
+
+      <div class="composer">
+        <textarea id="input" placeholder="Ask your research question..."></textarea>
+        <button class="btn primary" id="sendBtn">Send</button>
+      </div>
+    </main>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
