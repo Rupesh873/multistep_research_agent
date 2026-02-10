@@ -1,0 +1,89 @@
+✅ Entry point: app.py
+You start the system by running:
+uvicorn app:app --reload --workers 1
+So the backend “starts” at app.py, which:
+boots FastAPI
+initializes SQLite DB
+builds the LangGraph pipeline via graph = build_graph()
+exposes API routes (create chat, send message, export, etc.)
+When the user sends a query, the key path is:
+POST /chats/{chat_id}/messages → _run_pipeline() → graph.invoke() → pipeline nodes → final_synthesis_node() → returns final_answer + references
+
+
+
+
+
+Runtime flow (backend only)
+1) app.py receives a user query
+Route: POST /chats/{chat_id}/messages
+Saves the user message to SQLite (msra_chats.db)
+Calls:
+_run_pipeline(user_msg) → runs the research agent
+
+2) _run_pipeline() runs your LangGraph
+final_state = graph.invoke({"user_query": q})
+That graph is built in graph.py
+
+3) graph.py orchestrates the whole pipeline (the real “brain”)
+This file defines your StateGraph and the exact order of nodes.
+The flow in your graph is:
+1.query_expansion → getting_multiple_queries.py
+2.planning → main_agent.py
+3.Parallel information gathering agents:
+    agents/web_search.py
+    agents/news_trend.py
+    agents/data_statistics.py
+    agents/community_insight.py
+    agents/authority_source.py
+4.content_reader → agents/content_reader.py
+5.verification → agents/verification.py
+6.aggregation → aggregation_scoring.py
+7.repair_dedup → repair_dedup.py
+8.scrape_sources → scrape_sources.py
+9.content_processing → content_processing.py
+10.vector_indexing → vector_index.py
+11.final_synthesis → final_synthesis.py
+So execution begins at query_expansion and ends at final_synthesis.
+
+
+
+┌─────────────────────────────────────────────────────────────┐
+│                     LANGGRAPH ORCHESTRATION                  │
+├─────────────────────────────────────────────────────────────┤
+│  Step 1:  query_expansion                                   │
+│           ↳ getting_multiple_queries.py                     │
+│                                                             │
+│  Step 2:  planning                                          │
+│           ↳ main_agent.py                                   │
+│                                                             │
+│  Step 3:  PARALLEL EXECUTION:                               │
+│           ├─ web_search.py        (Concurrent)              │
+│           ├─ news_trend.py        (Concurrent)              │
+│           ├─ data_statistics.py   (Concurrent)              │
+│           ├─ community_insight.py (Concurrent)              │
+│           └─ authority_source.py  (Concurrent)              │
+│                                                             │
+│  Step 4:  content_reader                                    │
+│           ↳ agents/content_reader.py                        │
+│                                                             │
+│  Step 5:  verification                                      │
+│           ↳ agents/verification.py                          │
+│                                                             │
+│  Step 6:  aggregation                                       │
+│           ↳ aggregation_scoring.py                          │
+│                                                             │
+│  Step 7:  repair_dedup                                      │
+│           ↳ repair_dedup.py                                 │
+│                                                             │
+│  Step 8:  scrape_sources                                    │
+│           ↳ scrape_sources.py                               │
+│                                                             │
+│  Step 9:  content_processing                                │
+│           ↳ content_processing.py                           │
+│                                                             │
+│  Step 10: vector_indexing                                   │
+│           ↳ vector_index.py                                 │
+│                                                             │
+│  Step 11: final_synthesis                                   │
+│           ↳ final_synthesis.py                              │
+└─────────────────────────────────────────────────────────────┘
